@@ -10,5 +10,5 @@ public interface UserRepository {
 
     User save(String username, String email);
 
-    void deleteById(Long id);
+    boolean deleteById(Long id);
 }
