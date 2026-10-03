@@ -8,6 +8,8 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Repository
@@ -84,6 +86,32 @@ public class JdbcUserRepository implements UserRepository {
             int affectedRows = statement.executeUpdate();
 
             return affectedRows > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<User> findByUsernamePrefix(String prefix, int limit) {
+        String sqlQuery = """
+                SELECT id, username, email, created_at FROM users
+                WHERE username LIKE ? ORDER BY username LIMIT ?;
+                """;
+
+        try (Connection connection = this.dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlQuery))
+        {
+            statement.setString(1, prefix + "%");
+            statement.setInt(2, limit);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                List<User> users = new ArrayList<>();
+                while (resultSet.next()) {
+                    users.add(mapResultSetToUserDomain(resultSet));
+                }
+                return users;
+            }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
