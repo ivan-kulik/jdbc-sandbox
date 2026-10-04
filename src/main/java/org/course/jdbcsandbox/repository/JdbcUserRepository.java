@@ -1,6 +1,7 @@
 package org.course.jdbcsandbox.repository;
 
 import org.course.jdbcsandbox.domain.User;
+import org.course.jdbcsandbox.mapper.UserMapper;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
@@ -16,9 +17,14 @@ import java.util.Optional;
 public class JdbcUserRepository implements UserRepository {
 
     private final DataSource dataSource;
+    private final UserMapper userMapper;
 
-    public JdbcUserRepository(DataSource dataSource) {
+    public JdbcUserRepository(
+            DataSource dataSource,
+            UserMapper userMapper
+    ) {
         this.dataSource = dataSource;
+        this.userMapper = userMapper;
     }
 
     @Override
@@ -37,7 +43,7 @@ public class JdbcUserRepository implements UserRepository {
                     return Optional.empty();
                 }
 
-                return Optional.of(mapResultSetToUserDomain(resultSet));
+                return Optional.of(this.userMapper.map(resultSet));
             }
 
         } catch (SQLException e) {
@@ -63,7 +69,7 @@ public class JdbcUserRepository implements UserRepository {
                     throw new SQLException("Insert failed, no rows affected.");
                 }
 
-                return mapResultSetToUserDomain(resultSet);
+                return this.userMapper.map(resultSet);
             }
 
         } catch (SQLException e) {
@@ -107,7 +113,7 @@ public class JdbcUserRepository implements UserRepository {
             try (ResultSet resultSet = statement.executeQuery()) {
                 List<User> users = new ArrayList<>();
                 while (resultSet.next()) {
-                    users.add(mapResultSetToUserDomain(resultSet));
+                    users.add(this.userMapper.map(resultSet));
                 }
                 return users;
             }
@@ -115,15 +121,5 @@ public class JdbcUserRepository implements UserRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private User mapResultSetToUserDomain(ResultSet resultSet)
-            throws SQLException {
-        return new User(
-                resultSet.getLong("id"),
-                resultSet.getString("username"),
-                resultSet.getString("email"),
-                resultSet.getTimestamp("createdAt").toInstant()
-        );
     }
 }
