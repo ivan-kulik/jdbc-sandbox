@@ -133,7 +133,7 @@ public class JdbcUserRepository implements UserRepository {
     @Override
     public boolean existsById(Long id) {
         String sqlQuery = """
-                SELECT 1 FROM users WHERE id = ?;
+                SELECT EXISTS (SELECT 1 FROM users WHERE id = ?);
                 """;
 
         try (Connection connection = this.dataSource.getConnection();
@@ -142,7 +142,10 @@ public class JdbcUserRepository implements UserRepository {
             statement.setLong(1, id);
 
             try (ResultSet resultSet = statement.executeQuery()) {
-                return resultSet.next();
+                if (!resultSet.next()) {
+                    throw new SQLException("EXISTS query returned no result");
+                }
+                return resultSet.getBoolean(1);
             }
 
         } catch (SQLException e) {
