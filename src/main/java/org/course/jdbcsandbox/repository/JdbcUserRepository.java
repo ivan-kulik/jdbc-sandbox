@@ -51,6 +51,12 @@ public class JdbcUserRepository implements UserRepository {
         }
     }
 
+    /*
+    * How to get a generated key?
+    * 1) PreparedStatement statement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+    * ResultSet keys = statement.getGeneratedKeys();
+    * 2) Use RETURNING keyword id PostgreSQL
+    * */
     @Override
     public User save(String username, String email) {
         String sqlQuery = """
@@ -75,7 +81,6 @@ public class JdbcUserRepository implements UserRepository {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
     }
 
     @Override
@@ -92,6 +97,26 @@ public class JdbcUserRepository implements UserRepository {
             int affectedRows = statement.executeUpdate();
 
             return affectedRows > 0;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean existsById(Long id) {
+        String sqlQuery = """
+                SELECT 1 FROM users WHERE id = ?;
+                """;
+
+        try (Connection connection = this.dataSource.getConnection();
+            PreparedStatement statement = connection.prepareStatement(sqlQuery)
+        ) {
+            statement.setLong(1, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                return resultSet.next();
+            }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

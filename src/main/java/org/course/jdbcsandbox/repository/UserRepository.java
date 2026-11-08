@@ -13,5 +13,7 @@ public interface UserRepository {
 
     boolean deleteById(Long id);
 
+    boolean existsById(Long id);
+
     List<User> findByUsernamePrefix(String prefix, int limit);
 }
