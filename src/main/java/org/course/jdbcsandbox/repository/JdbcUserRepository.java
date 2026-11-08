@@ -1,6 +1,7 @@
 package org.course.jdbcsandbox.repository;
 
 import org.course.jdbcsandbox.domain.User;
+import org.course.jdbcsandbox.dto.UpdateUserRequest;
 import org.course.jdbcsandbox.mapper.UserMapper;
 import org.springframework.stereotype.Repository;
 
@@ -76,6 +77,33 @@ public class JdbcUserRepository implements UserRepository {
                 }
 
                 return this.userMapper.map(resultSet);
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Optional<User> update(Long id, UpdateUserRequest request) {
+        String sqlQuery = """
+                UPDATE users SET username = ?, email = ?
+                WHERE id = ?
+                RETURNING id, username, email, created_at
+                """;
+
+        try (Connection connection = this.dataSource.getConnection();
+             PreparedStatement statement = connection.prepareStatement(sqlQuery);
+        ) {
+            statement.setString(1, request.username());
+            statement.setString(2, request.email());
+            statement.setLong(3, id);
+
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    return Optional.empty();
+                }
+                return Optional.of(this.userMapper.map(resultSet));
             }
 
         } catch (SQLException e) {
