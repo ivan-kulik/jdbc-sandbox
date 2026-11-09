@@ -2,6 +2,7 @@ package org.course.jdbcsandbox.repository;
 
 import org.course.jdbcsandbox.domain.User;
 import org.course.jdbcsandbox.dto.UpdateUserRequest;
+import org.course.jdbcsandbox.jdbc.JdbcExecutor;
 import org.course.jdbcsandbox.mapper.UserMapper;
 import org.springframework.stereotype.Repository;
 
@@ -17,15 +18,18 @@ import java.util.Optional;
 @Repository
 public class JdbcUserRepository implements UserRepository {
 
-    private final DataSource dataSource;
+    private final DataSource dataSource;    // if you use only jdbcExecutor, you do not need this field here
     private final UserMapper userMapper;
+    private final JdbcExecutor jdbcExecutor;
 
     public JdbcUserRepository(
             DataSource dataSource,
-            UserMapper userMapper
+            UserMapper userMapper,
+            JdbcExecutor jdbcExecutor
     ) {
         this.dataSource = dataSource;
         this.userMapper = userMapper;
+        this.jdbcExecutor = jdbcExecutor;
     }
 
     @Override
@@ -33,23 +37,32 @@ public class JdbcUserRepository implements UserRepository {
         String sqlQuery = """
                 SELECT * FROM users WHERE id = ?;
                 """;
-
+        /*
         try (Connection connection = this.dataSource.getConnection();
              PreparedStatement statement = connection.prepareStatement(sqlQuery)
         ) {
             statement.setLong(1, id);
-
             try (ResultSet resultSet = statement.executeQuery()) {
                 if (!resultSet.next()) {
                     return Optional.empty();
                 }
-
                 return Optional.of(this.userMapper.map(resultSet));
             }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+         */
+
+        return this.jdbcExecutor.query(
+                sqlQuery,
+                statement -> statement.setLong(1, id),
+                resultSet -> {
+                    if (!resultSet.next()) {
+                        return Optional.empty();
+                    }
+                    return Optional.of(this.userMapper.map(resultSet));
+                }
+        );
     }
 
     /*
@@ -62,7 +75,7 @@ public class JdbcUserRepository implements UserRepository {
     public User save(String username, String email) {
         String sqlQuery = """
                 INSERT INTO users (username, email) VALUES (?, ?)
-                RETURNING *;
+                RETURNING id, username, email, created_at;
                 """;
 
         try (Connection connection = this.dataSource.getConnection();
