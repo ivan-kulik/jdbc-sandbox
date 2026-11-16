@@ -1,14 +1,11 @@
 package org.course.jdbcsandbox.repository;
 
-import org.springframework.stereotype.Repository;
-
 import javax.sql.DataSource;
 import java.math.BigDecimal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-@Repository
 public class JdbcTransferDemo {
 
     private final DataSource dataSource;
