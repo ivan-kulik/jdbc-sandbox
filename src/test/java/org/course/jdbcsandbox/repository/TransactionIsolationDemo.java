@@ -21,7 +21,7 @@ public class TransactionIsolationDemo {
         this.dataSource = dataSource;
     }
 
-    public void demonstrateNonRepeatableRead(
+    public BigDecimal demonstrateNonRepeatableRead(
             int isolationLevel,
             String messageInfo
     ) throws SQLException {
@@ -74,6 +74,8 @@ public class TransactionIsolationDemo {
                 logResult(messageInfo, balanceBefore, balanceAfter);
 
                 connection1.rollback();
+
+                return balanceAfter;
             } catch (SQLException | RuntimeException exception) {
                 try {
                     connection1.rollback();
