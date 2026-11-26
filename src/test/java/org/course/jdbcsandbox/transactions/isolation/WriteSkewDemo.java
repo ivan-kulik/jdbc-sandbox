@@ -1,4 +1,4 @@
-package org.course.jdbcsandbox.repository;
+package org.course.jdbcsandbox.transactions.isolation;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

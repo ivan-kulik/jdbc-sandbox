@@ -1,4 +1,4 @@
-package org.course.jdbcsandbox.repository;
+package org.course.jdbcsandbox.transactions.locking;
 
 import javax.sql.DataSource;
 import java.sql.Connection;

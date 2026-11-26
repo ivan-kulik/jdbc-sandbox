@@ -1,4 +1,4 @@
-package org.course.jdbcsandbox.repository;
+package org.course.jdbcsandbox.transactions.locking;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
