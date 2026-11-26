@@ -48,6 +48,10 @@ public class JdbcExecutor {
         Connection connection = DataSourceUtils.getConnection(dataSource);
         try {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+                DataSourceUtils.applyTransactionTimeout(
+                        preparedStatement, dataSource
+                );
+
                 statementSetter.setValues(preparedStatement);
 
                 try (ResultSet resultSet = preparedStatement.executeQuery()) {
@@ -70,6 +74,10 @@ public class JdbcExecutor {
         Connection connection = DataSourceUtils.getConnection(dataSource);
         try {
             try (PreparedStatement preparedStatement = connection.prepareStatement(sqlQuery)) {
+                DataSourceUtils.applyTransactionTimeout(
+                        preparedStatement, dataSource
+                );
+
                 statementSetter.setValues(preparedStatement);
 
                 return preparedStatement.executeUpdate();
